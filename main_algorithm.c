@@ -20,6 +20,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			if(ref == 0){
 				cycle++;
 			}else{
+				eventMessage(ref, server);
 			}
 		}
 			break;

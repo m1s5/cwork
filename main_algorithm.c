@@ -1,20 +1,16 @@
 #include <open62541.h>
 #include <stdlib.h>
 #include <string.h>
-
+//1801 2116 5125 2800 / 6145 8470 20773 10240
 static UA_NodeId eventType;
 char *msg;
-
-static UA_StatusCode
-addNewEventType(UA_Server *server);
-
-static UA_StatusCode
-setUpEvent(UA_Server *server, UA_NodeId *outId);
+static char cycle = 0;
+static UA_StatusCode addNewEventType(UA_Server *server);
+static UA_StatusCode setUpEvent(UA_Server *server, UA_NodeId *outId);
 
 void write_detector_value(UA_UInt16 value, UA_Server *server) {
 	
 	addNewEventType(server);
-	static char cycle = 0;
 	UA_UInt16 ref;
 
 	switch(cycle){
@@ -24,22 +20,6 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			if(ref == 0){
 				cycle++;
 			}else{
-				cycle = 0;
-				char dtc[17];
-				for(int i = 0; i < 16; ++i){
-					dtc[15 - i] = 48 + ref%2;
-					ref >>= 1;
-				}
-				dtc[16] = '\0';
-				free(msg);
-				msg = (char*)malloc(50 * sizeof(char));
-				strcpy(msg, "1-ERRORS: ");
-				strcat(msg, dtc);
-				UA_NodeId eventNodeId;
-				setUpEvent(server, &eventNodeId);
-				UA_Server_triggerEvent(server, eventNodeId,
-                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
-                                    NULL, UA_TRUE);
 			}
 		}
 			break;
@@ -49,22 +29,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			if(ref == 0){
 				cycle++;
 			}else{
-				cycle = 0;
-				char dtc[17];
-				for(int i = 0; i < 16; ++i){
-					dtc[15 - i] = 48 + ref%2;
-					ref >>= 1;
-				}
-				dtc[16] = '\0';
-				free(msg);
-				msg = (char*)malloc(50 * sizeof(char));
-				strcpy(msg, "2-ERRORS: ");
-				strcat(msg, dtc);
-				UA_NodeId eventNodeId;
-				setUpEvent(server, &eventNodeId);
-				UA_Server_triggerEvent(server, eventNodeId,
-                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
-                                    NULL, UA_TRUE);
+				eventMessage(ref, server);
 			}
 		}
 			break;
@@ -74,22 +39,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			if(ref == 0){
 				cycle++;
 			}else{
-				cycle = 0;
-				char dtc[17];
-				for(int i = 0; i < 16; ++i){
-					dtc[15 - i] = 48 + ref%2;
-					ref >>= 1;
-				}
-				dtc[16] = '\0';
-				free(msg);
-				msg = (char*)malloc(50 * sizeof(char));
-				strcpy(msg, "3-ERRORS: ");
-				strcat(msg, dtc);
-				UA_NodeId eventNodeId;
-				setUpEvent(server, &eventNodeId);
-				UA_Server_triggerEvent(server, eventNodeId,
-                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
-                                    NULL, UA_TRUE);
+				eventMessage(ref, server);
 			}
 		}
 			break;
@@ -108,22 +58,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
                                     UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
                                     NULL, UA_TRUE);
 			}else{
-				cycle = 0;
-				char dtc[17];
-				for(int i = 0; i < 16; ++i){
-					dtc[15 - i] = 48 + ref%2;
-					ref >>= 1;
-				}
-				dtc[16] = '\0';
-				free(msg);
-				msg = (char*)malloc(50 * sizeof(char));
-				strcpy(msg, "4-ERRORS: ");
-				strcat(msg, dtc);
-				UA_NodeId eventNodeId;
-				setUpEvent(server, &eventNodeId);
-				UA_Server_triggerEvent(server, eventNodeId,
-                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
-                                    NULL, UA_TRUE);
+				eventMessage(ref, server);
 			}
 		}
 			break;
@@ -131,8 +66,26 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 }
 
 
-
-
+void eventMessage(UA_UInt16 ref, UA_Server *server) {
+	char dtc[17];
+	for(int i = 0; i < 16; ++i){
+		dtc[15 - i] = 48 + ref%2;
+		ref >>= 1;
+	}
+	dtc[16] = '\0';
+	free(msg);
+	msg = (char*)malloc(50 * sizeof(char));
+	msg[0] = cycle + 49;
+	msg[1] = '\0';
+	cycle = 0;
+	strcat(msg, "-ERRORS: ");
+	strcat(msg, dtc);
+	UA_NodeId eventNodeId;
+	setUpEvent(server, &eventNodeId);
+	UA_Server_triggerEvent(	server, eventNodeId,
+				UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
+				NULL, UA_TRUE);
+}
 
 static UA_StatusCode
 addNewEventType(UA_Server *server) {

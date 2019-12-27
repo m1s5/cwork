@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2.1)
 project(simple_server C)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
+set (CMAKE_C_STANDART 89)
 add_executable(${PROJECT_NAME} main.c main_server.c main_server.h main_algorithm.c)
 
 if (WIN32)

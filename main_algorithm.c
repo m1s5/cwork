@@ -1,7 +1,7 @@
 #include <open62541.h>
 #include <stdlib.h>
 #include <string.h>
-//1801 2116 5125 2800 / 6145 8470 20773 10240
+/*1801 2116 5125 2800 / 6145 8470 20773 10240*/
 static UA_NodeId eventType;
 char *msg;
 static char cycle = 0;
@@ -20,9 +20,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			ref ^= value;
 			if(ref == 0){
 				cycle++;
-			}else{
-				eventMessage(ref, server);
-			}
+			}else eventMessage(ref, server);
 		}
 			break;
 		case 1:{
@@ -30,9 +28,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			ref ^= value;
 			if(ref == 0){
 				cycle++;
-			}else{
-				eventMessage(ref, server);
-			}
+			}else eventMessage(ref, server);
 		}
 			break;
 		case 2:{
@@ -40,9 +36,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			ref ^= value;
 			if(ref == 0){
 				cycle++;
-			}else{
-				eventMessage(ref, server);
-			}
+			}else eventMessage(ref, server);
 		}
 			break;
 		case 3:{
@@ -50,8 +44,9 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			ref ^= value;
 			if(ref == 0){
 				cycle = 0;
+				free(msg);
 				msg = (char*)malloc(3 * sizeof(char));
-				strcpy(msg, "OK");
+				strcpy(msg, "ALT RIGHT");
 				/*EVENT_OK*/
 				UA_NodeId eventNodeId;
 				setUpEvent(server, &eventNodeId);
@@ -59,9 +54,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
                                     UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
                                     NULL, UA_TRUE);
 				free(msg);
-			}else{
-				eventMessage(ref, server);
-			}
+			}else eventMessage(ref, server);
 		}
 			break;
 	}
@@ -70,7 +63,8 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 
 void eventMessage(UA_UInt16 ref, UA_Server *server) {
 	char dtc[17];
-	for(int i = 0; i < 16; ++i){
+	int i = 0;
+	for(i; i < 16; ++i){
 		dtc[15 - i] = 48 + ref%2;
 		ref >>= 1;
 	}

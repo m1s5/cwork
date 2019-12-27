@@ -5,6 +5,7 @@
 static UA_NodeId eventType;
 char *msg;
 static char cycle = 0;
+void eventMessage(UA_UInt16 ref, UA_Server *server);
 static UA_StatusCode addNewEventType(UA_Server *server);
 static UA_StatusCode setUpEvent(UA_Server *server, UA_NodeId *outId);
 
@@ -49,7 +50,6 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 			ref ^= value;
 			if(ref == 0){
 				cycle = 0;
-				free(msg);
 				msg = (char*)malloc(3 * sizeof(char));
 				strcpy(msg, "OK");
 				/*EVENT_OK*/
@@ -58,6 +58,7 @@ void write_detector_value(UA_UInt16 value, UA_Server *server) {
 				UA_Server_triggerEvent(server, eventNodeId,
                                     UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
                                     NULL, UA_TRUE);
+				free(msg);
 			}else{
 				eventMessage(ref, server);
 			}
@@ -86,6 +87,7 @@ void eventMessage(UA_UInt16 ref, UA_Server *server) {
 	UA_Server_triggerEvent(	server, eventNodeId,
 				UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
 				NULL, UA_TRUE);
+	free(msg);
 }
 
 static UA_StatusCode
